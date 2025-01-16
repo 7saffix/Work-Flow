@@ -1,7 +1,8 @@
-import userModel from "../Models/usersModel.js";
 import bycript from 'bcryptjs'
+
+import userModel from "../Models/usersModel.js";
 import { encodeTokenAndSetCookie } from "../Utilities/tokenUtility.js";
-import mongoose from "mongoose";
+import { sendEmail } from "../Utilities/emailUtility.js";
 
 
 // registration
@@ -60,30 +61,6 @@ export const logout =async(req,res)=>{
 }
 
 // //profile read
-// export const profileRead =  async(req,res)=>{
-//     // const email = req.headers.email
-//     const id = req.headers.id
-//     const objectId =new mongoose.Types.ObjectId(id);
-//     try {
-//         const matchStage = {
-//             $match:{
-//             //    email
-//             "_id":objectId
-//             }
-//         };
-//         const projectStage = {
-//             $project:{
-//                 email:1,
-//                 username:1
-//             }
-//         }
-
-//         const user = await userModel.aggregate([matchStage,projectStage])
-//         res.status(200).json({success:true,message:'success',data:user})
-//     } catch (error) {
-//         res.status(500).json({success:false,message:error.message.toString()})
-//     }
-// }
 export const profileRead = async(req,res)=>{
     const email = req.headers.email;
     try {
@@ -96,5 +73,68 @@ export const profileRead = async(req,res)=>{
             }})
     } catch (error) {
         res.status(500).json({success:false,message:error.message.toString()})
+    }
+}
+
+export const profileUpdate = async(req,res)=>{
+    const userId = req.headers.id;
+    const updatedData = req.body;
+    try {
+        await userModel.updateOne({_id:userId},updatedData)
+        res.status(200).json({success:true,message:'update successful'})
+    } catch (error) {
+        res.status(500).json({success:false,message:error.message.toString()})
+    }
+}
+
+export const emailVerify =async(req,res)=>{
+    const {email} = req.body;
+    try {
+        const user = await userModel.findOne({email})
+        if(!user){
+            res.status(400).json({success:false,message:'email does not exist!'})
+        }else{
+            const otp = Math.floor((Math.random() * 900000) + 100000);
+            const EmailTo = user['email'];
+            const EmailSubject = 'Email verification code';
+            const EmailText = 'Your verification code is: ' + otp;
+
+            await sendEmail(EmailTo,EmailSubject,EmailText);
+            await userModel.updateOne({email:email},{otp:otp})
+            res.status(200).json({success:true,message:'check your email'})
+        }
+    } catch (error) {
+        res.status(500).json({success:false,message:error.message.toString()})
+    }
+}
+
+export const otpVerify = async(req,res)=>{
+    const {otp} = req.body;
+    try {
+        const data =  await userModel.findOne({otp});
+        if(!data){
+            res.status(400).json({success:false,message:'invalid otp'})
+        }else{
+            res.status(200).json({success:true,message:'otp verified'})
+        }
+    } catch (error) {
+        res.status(500).json({success:false,message:error.message.toString()})
+    }
+}
+
+export const resetPassword = async(req,res)=>{
+    const {email} = req.params;
+    const {newPass} = req.body;
+
+    try {
+        const user = await userModel.findOne({email});
+        if(!user){
+            res.status(400).json({success:false,message:'invalid otp'})
+        }else{
+            await userModel.updateOne({email:email},{password:newPass,otp:0});
+            res.status(200).json({success:true,message:'password update successful'})
+        }
+    } catch (error) {
+            res.status(500).json({success:false,message:error.message.toString()})
     }
 }
