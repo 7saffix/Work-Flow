@@ -17,7 +17,7 @@ export const sendEmail=async(emailTo,emailText,emailSubject)=>{
     });
 
     const mailOption = {
-        from:'Work Flow <mern_ostad@themesoft69.com>',
+        from:`Work Flow <${process.env.EMAIL_USER}>`,
         to:emailTo,
         subject:emailSubject,
         text:emailText,
@@ -25,31 +25,4 @@ export const sendEmail=async(emailTo,emailText,emailSubject)=>{
 
     return await transporter.sendMail(mailOption)
 }
-// const Nodemailer = require("nodemailer");
-// const { MailtrapTransport } = require("mailtrap");
 
-// const TOKEN = "8a137beb043968d748a71b1a33225ddd";
-
-// const transport = Nodemailer.createTransport(
-//   MailtrapTransport({
-//     token: TOKEN,
-//   })
-// );
-
-// const sender = {
-//   address: "hello@demomailtrap.com",
-//   name: "Mailtrap Test",
-// };
-// const recipients = [
-//   "7saffix@gmail.com",
-// ];
-
-// transport
-//   .sendMail({
-//     from: sender,
-//     to: recipients,
-//     subject: "You are awesome!",
-//     text: "Congrats for sending test email with Mailtrap!",
-//     category: "Integration Test",
-//   })
-//   .then(console.log, console.error);

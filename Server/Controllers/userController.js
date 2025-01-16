@@ -60,7 +60,7 @@ export const logout =async(req,res)=>{
     }
 }
 
-// //profile read
+//profile read
 export const profileRead = async(req,res)=>{
     const email = req.headers.email;
     try {
@@ -76,6 +76,7 @@ export const profileRead = async(req,res)=>{
     }
 }
 
+//profile update
 export const profileUpdate = async(req,res)=>{
     const userId = req.headers.id;
     const updatedData = req.body;
@@ -87,6 +88,7 @@ export const profileUpdate = async(req,res)=>{
     }
 }
 
+//email verification
 export const emailVerify =async(req,res)=>{
     const {email} = req.body;
     try {
@@ -108,6 +110,7 @@ export const emailVerify =async(req,res)=>{
     }
 }
 
+//otp verification
 export const otpVerify = async(req,res)=>{
     const {otp} = req.body;
     try {
@@ -122,6 +125,7 @@ export const otpVerify = async(req,res)=>{
     }
 }
 
+//reset password
 export const resetPassword = async(req,res)=>{
     const {email} = req.params;
     const {newPass} = req.body;
