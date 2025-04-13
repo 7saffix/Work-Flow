@@ -1,4 +1,4 @@
-import bycript from "bcryptjs";
+import bcryptjs from "bcryptjs";
 
 import userModel from "../Models/usersModel.js";
 import { encodeTokenAndSetCookie } from "../Utilities/tokenUtility.js";
@@ -22,7 +22,7 @@ export const signup = async (req, res) => {
         .json({ success: false, message: "User already exist!" });
     }
 
-    const hashPassword = await bycript.hash(password, 10);
+    const hashPassword = await bcryptjs.hash(password, 10);
     const user = new userModel({
       username,
       email,
@@ -30,7 +30,9 @@ export const signup = async (req, res) => {
       password: hashPassword,
     });
     await user.save();
-    res.status(201).json({ success: true, message: "Registration Successful" });
+    return res
+      .status(201)
+      .json({ success: true, message: "Registration Successful" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message.toString() });
   }
@@ -42,25 +44,32 @@ export const login = async (req, res) => {
   try {
     const user = await userModel.findOne({ email });
     if (!user) {
-      res.status(400).json({ success: false, message: "invalid email" });
+      return res.status(400).json({ success: false, message: "invalid email" });
     }
-    const isPasswordValid = bycript.compare(password, user.password);
-    if (!isPasswordValid) {
-      res.status(400).json({ success: false, message: "invalid password" });
-    }
-    const token = encodeTokenAndSetCookie(res, email, user._id);
 
+    // Await the password comparison
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid password" });
+    }
+
+    const token = encodeTokenAndSetCookie(res, email, user._id);
     const userObj = user.toObject();
     delete userObj.password;
 
-    res.status(200).json({
+    // Send the response once after everything is done
+    return res.status(200).json({
       success: true,
       message: "login successful",
       token: token,
       user: userObj,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message.toString() });
+    return res
+      .status(500)
+      .json({ success: false, message: error.message.toString() });
   }
 };
 
